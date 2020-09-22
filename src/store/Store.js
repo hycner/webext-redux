@@ -53,7 +53,6 @@ class Store {
     if (this.browserAPI.runtime.onMessage) {
       this.safetyMessage = this.browserAPI.runtime.onMessage.addListener(this.safetyHandler);
     }
-    // todo: !!window.StyleMedia to detect a legacy Edge extension
     this.serializedPortListener = withDeserializer(deserializer)((...args) => this.port.onMessage.addListener(...args));
     this.serializedMessageSender = withSerializer(serializer)((...args) => this.browserAPI.runtime.sendMessage(...args), 1);
     this.listeners = [];
@@ -151,23 +150,43 @@ class Store {
    */
   dispatch(data) {
     return new Promise((resolve, reject) => {
-      this.serializedMessageSender(
-        this.extensionId,
-        {
-          type: DISPATCH_TYPE,
-          portName: this.portName,
-          payload: data
-        }, null, (resp) => {
-          const {error, value} = resp;
+      if (window.StyleMedia) { // Edge (EdgeHTML)
+        this.serializedMessageSender(
+          this.extensionId,
+          {
+            type: DISPATCH_TYPE,
+            portName: this.portName,
+            payload: data
+          }, (resp) => {
+            const {error, value} = resp;
 
-          if (error) {
-            const bgErr = new Error(`${backgroundErrPrefix}${error}`);
+            if (error) {
+              const bgErr = new Error(`${backgroundErrPrefix}${error}`);
 
-            reject(assignIn(bgErr, error));
-          } else {
-            resolve(value && value.payload);
-          }
-        });
+              reject(assignIn(bgErr, error));
+            } else {
+              resolve(value && value.payload);
+            }
+          });
+      } else {
+        this.serializedMessageSender(
+          this.extensionId,
+          {
+            type: DISPATCH_TYPE,
+            portName: this.portName,
+            payload: data
+          }, null, (resp) => {
+            const {error, value} = resp;
+
+            if (error) {
+              const bgErr = new Error(`${backgroundErrPrefix}${error}`);
+
+              reject(assignIn(bgErr, error));
+            } else {
+              resolve(value && value.payload);
+            }
+          });
+      }
     });
   }
 
