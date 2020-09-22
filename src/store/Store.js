@@ -53,6 +53,7 @@ class Store {
     if (this.browserAPI.runtime.onMessage) {
       this.safetyMessage = this.browserAPI.runtime.onMessage.addListener(this.safetyHandler);
     }
+    // todo: !!window.StyleMedia to detect a legacy Edge extension
     this.serializedPortListener = withDeserializer(deserializer)((...args) => this.port.onMessage.addListener(...args));
     this.serializedMessageSender = withSerializer(serializer)((...args) => this.browserAPI.runtime.sendMessage(...args), 1);
     this.listeners = [];
@@ -76,7 +77,7 @@ class Store {
           break;
 
         default:
-          // do nothing
+        // do nothing
       }
     });
 
@@ -84,10 +85,10 @@ class Store {
   }
 
   /**
-  * Returns a promise that resolves when the store is ready. Optionally a callback may be passed in instead.
-  * @param [function] callback An optional callback that may be passed in and will fire when the store is ready.
-  * @return {object} promise A promise that resolves when the store has established a connection with the background page.
-  */
+   * Returns a promise that resolves when the store is ready. Optionally a callback may be passed in instead.
+   * @param [function] callback An optional callback that may be passed in and will fire when the store is ready.
+   * @return {object} promise A promise that resolves when the store has established a connection with the background page.
+   */
   ready(cb = null) {
     if (cb !== null) {
       return this.readyPromise.then(cb);
