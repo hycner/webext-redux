@@ -182,6 +182,12 @@ class Store {
             portName: this.portName,
             payload: data
           }, null, (resp) => {
+            console.log('** resp', resp)
+            if (!resp) {
+              const bgErr = new Error(`${backgroundErrPrefix}some weird error`);
+              reject(assignIn(bgErr, 'some weird error'));
+            }
+
             const {error, value} = resp;
 
             if (error) {

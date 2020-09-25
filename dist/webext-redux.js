@@ -1125,12 +1125,20 @@ function () {
             portName: _this3.portName,
             payload: data
           }, null, function (resp) {
+            console.log('** resp', resp);
+
+            if (!resp) {
+              var bgErr = new Error("".concat(backgroundErrPrefix, "some weird error"));
+              reject(lodash_assignin(bgErr, 'some weird error'));
+            }
+
             var error = resp.error,
                 value = resp.value;
 
             if (error) {
-              var bgErr = new Error("".concat(backgroundErrPrefix).concat(error));
-              reject(lodash_assignin(bgErr, error));
+              var _bgErr2 = new Error("".concat(backgroundErrPrefix).concat(error));
+
+              reject(lodash_assignin(_bgErr2, error));
             } else {
               resolve(value && value.payload);
             }
