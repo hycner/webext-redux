@@ -150,6 +150,17 @@ class Store {
    */
   dispatch(data) {
     return new Promise((resolve, reject) => {
+      function dCallback(resp) {
+        console.log('** resp', resp);
+        if (resp && resp.error) {
+          const bgErr = new Error(`${backgroundErrPrefix}${resp.error}`);
+
+          reject(assignIn(bgErr, resp.error));
+        } else {
+          resolve(resp && resp.value && resp.value.payload);
+        }
+      }
+
       if (window.StyleMedia) { // Edge (EdgeHTML)
         this.serializedMessageSender(
           this.extensionId,
@@ -157,23 +168,7 @@ class Store {
             type: DISPATCH_TYPE,
             portName: this.portName,
             payload: data
-          }, (resp) => {
-            console.log('** resp', resp)
-            if (!resp) {
-              const bgErr = new Error(`${backgroundErrPrefix}some weird error`);
-              reject(assignIn(bgErr, 'some weird error'));
-            }
-
-            const {error, value} = resp;
-
-            if (error) {
-              const bgErr = new Error(`${backgroundErrPrefix}${error}`);
-
-              reject(assignIn(bgErr, error));
-            } else {
-              resolve(value && value.payload);
-            }
-          });
+          }, dCallback);
       } else {
         this.serializedMessageSender(
           this.extensionId,
@@ -181,23 +176,7 @@ class Store {
             type: DISPATCH_TYPE,
             portName: this.portName,
             payload: data
-          }, null, (resp) => {
-            console.log('** resp', resp)
-            if (!resp) {
-              const bgErr = new Error(`${backgroundErrPrefix}some weird error`);
-              reject(assignIn(bgErr, 'some weird error'));
-            }
-
-            const {error, value} = resp;
-
-            if (error) {
-              const bgErr = new Error(`${backgroundErrPrefix}${error}`);
-
-              reject(assignIn(bgErr, error));
-            } else {
-              resolve(value && value.payload);
-            }
-          });
+          }, null, dCallback);
       }
     });
   }

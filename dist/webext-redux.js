@@ -1094,55 +1094,30 @@ function () {
       var _this3 = this;
 
       return new Promise(function (resolve, reject) {
+        function dCallback(resp) {
+          console.log('** resp', resp);
+
+          if (resp && resp.error) {
+            var bgErr = new Error("".concat(backgroundErrPrefix).concat(resp.error));
+            reject(lodash_assignin(bgErr, resp.error));
+          } else {
+            resolve(resp && resp.value && resp.value.payload);
+          }
+        }
+
         if (window.StyleMedia) {
           // Edge (EdgeHTML)
           _this3.serializedMessageSender(_this3.extensionId, {
             type: DISPATCH_TYPE,
             portName: _this3.portName,
             payload: data
-          }, function (resp) {
-            console.log('** resp', resp);
-
-            if (!resp) {
-              var bgErr = new Error("".concat(backgroundErrPrefix, "some weird error"));
-              reject(lodash_assignin(bgErr, 'some weird error'));
-            }
-
-            var error = resp.error,
-                value = resp.value;
-
-            if (error) {
-              var _bgErr = new Error("".concat(backgroundErrPrefix).concat(error));
-
-              reject(lodash_assignin(_bgErr, error));
-            } else {
-              resolve(value && value.payload);
-            }
-          });
+          }, dCallback);
         } else {
           _this3.serializedMessageSender(_this3.extensionId, {
             type: DISPATCH_TYPE,
             portName: _this3.portName,
             payload: data
-          }, null, function (resp) {
-            console.log('** resp', resp);
-
-            if (!resp) {
-              var bgErr = new Error("".concat(backgroundErrPrefix, "some weird error"));
-              reject(lodash_assignin(bgErr, 'some weird error'));
-            }
-
-            var error = resp.error,
-                value = resp.value;
-
-            if (error) {
-              var _bgErr2 = new Error("".concat(backgroundErrPrefix).concat(error));
-
-              reject(lodash_assignin(_bgErr2, error));
-            } else {
-              resolve(value && value.payload);
-            }
-          });
+          }, null, dCallback);
         }
       });
     }
