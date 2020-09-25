@@ -1123,6 +1123,12 @@ function () {
             portName: _this3.portName,
             payload: data
           }, null, function (resp) {
+            if (!resp) {
+              var bgErr = new Error("".concat(backgroundErrPrefix).concat('some weird error'));
+              reject((0, _lodash.default)(bgErr, error));
+              return
+            }
+
             var error = resp.error,
                 value = resp.value;
 
